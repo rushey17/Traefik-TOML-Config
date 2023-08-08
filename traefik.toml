@@ -1,0 +1,29 @@
+defaultEntryPoints = ["http"]
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+
+[api]
+  dashboard = true
+
+[providers]
+  [providers.docker]
+    exposedByDefault = false
+
+[http]
+  [http.routers]
+    [http.routers.fastapi]
+    rule = "Host(`localhost`) && PathPrefix(`/`)"
+    middlewares = "block-unknown-routes"
+    service = "fastapi"
+    
+  [http.middlewares]
+    [http.middlewares.block-unknown-routes.plugin.redirectregex]
+    regex = "^https?://[^/]+(/.*)?$"
+    replacement = "https://localhost/not-found"
+
+  [http.services]
+    [http.services.fastapi.loadBalancer]
+    [[http.services.fastapi.loadBalancer.servers]]
+    url = "http://fastapi:8000"
